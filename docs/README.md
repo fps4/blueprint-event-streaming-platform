@@ -2,7 +2,8 @@
 
 Use this as the entry point for all platform docs.
 
-- Platform goals & UX
+- Product overview
+  - [Product Summary](./product-summary.md)
   - [Requirements & UX](./requirements-ux.md)
 - Solution Design
   - [Overview](./solution-design.md)
@@ -17,5 +18,5 @@ Use this as the entry point for all platform docs.
     - [Data Models](./components/data-models.md)
 - Architecture assets
   - Structurizr workspace: `architecture/structurizr/workspace.dsl`
-- Decisions
-  - ADRs: `decisions/adr-xxx-<name>.md`
+  - Whiteboard diagrams: `diagrams/`
+  - Decisions `decisions/`

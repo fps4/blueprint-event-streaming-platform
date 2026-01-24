@@ -221,6 +221,38 @@ services:
     volumes:
       - mongo_data:/data/db
 
+  clickhouse:
+    build:
+      context: .
+      dockerfile: ./services/clickhouse/Dockerfile
+      args:
+        CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+        CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+        CLICKHOUSE_DB: ${CLICKHOUSE_DB}
+    restart: unless-stopped
+    ports:
+      - "8123:8123"   # HTTP interface
+      - "9000:9000"   # Native TCP interface
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    networks:
+      - event-streaming-platform
+
+  clickhouse-init:
+    build:
+      context: .
+      dockerfile: ./services/clickhouse/Dockerfile-init
+      args:
+        CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+        CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+        CLICKHOUSE_DB: ${CLICKHOUSE_DB}
+    restart: 'no'
+    depends_on:
+      - clickhouse
+      - broker
+    networks:
+      - event-streaming-platform
+      
 
 networks:
   event-streaming-platform:
@@ -229,4 +261,5 @@ networks:
 volumes:
   mongo_data:
     driver: local
-    
+  clickhouse_data:
+    driver: local

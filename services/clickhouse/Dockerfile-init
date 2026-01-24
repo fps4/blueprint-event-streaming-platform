@@ -1,0 +1,18 @@
+FROM clickhouse/clickhouse-client:latest
+
+# Copy init SQL files and a small init script into the image so the container can run them.
+WORKDIR /sql
+COPY init/ /sql/
+COPY init-run.sh /usr/local/bin/init-clickhouse.sh
+RUN chmod +x /usr/local/bin/init-clickhouse.sh
+
+ENTRYPOINT ["/usr/local/bin/init-clickhouse.sh"]
+
+ARG CLICKHOUSE_USER
+ARG CLICKHOUSE_PASSWORD
+ARG CLICKHOUSE_DB
+
+# Document defaults for runtime — docker-compose will supply these at runtime
+ENV CLICKHOUSE_USER=$CLICKHOUSE_USER
+ENV CLICKHOUSE_PASSWORD=$CLICKHOUSE_PASSWORD
+ENV CLICKHOUSE_DB=$CLICKHOUSE_DB
