@@ -12,8 +12,8 @@ export async function listPipelines(workspaceId, signal) {
       name: p.name ?? 'Untitled pipeline',
       status: p.status ?? 'unknown',
       description: p.description ?? '',
-      sourceTopic: p.sourceTopic ?? '',
-      targetTopic: p.targetTopic ?? '',
+      sourceTopic: p.streams?.find?.((s) => s.type === 'source')?.topic ?? '',
+      targetTopic: p.streams?.find?.((s) => s.type === 'sink')?.topic ?? '',
     }));
   } catch (err) {
     if (err?.response?.status === 404) {

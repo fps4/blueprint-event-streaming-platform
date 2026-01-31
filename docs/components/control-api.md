@@ -12,7 +12,7 @@ Control-plane API used by UI/automation to power end-user flows (workspaces, pip
 - `GET /api/health` — API health.
 - User auth: integrates with Authorizer-issued tokens; user registration/auth flows exposed via `/api/users` (delegated auth token issuance through Authorizer).
 - Workspaces: `GET /api/workspaces`, `POST /api/workspaces`.
-- Pipelines: `GET /api/workspaces/:id/pipelines`, `POST /api/workspaces/:id/pipelines`, `POST /api/pipelines/:id/start`, `POST /api/pipelines/:id/stop`.
+- Pipelines: `GET /api/workspaces/:id/pipelines`, `POST /api/workspaces/:id/pipelines`, `PUT /api/workspaces/:id/pipelines/:pipelineId` (update status/streams/clients/transform), `POST /api/pipelines/:id/start`, `POST /api/pipelines/:id/stop`.
 - Connectors: source/sink config management surfaced through pipelines endpoints.
 - Clients: `GET /api/workspaces/:id/clients`, `POST /api/workspaces/:id/clients`.
 - Users: `GET /api/workspaces/:id/users`, `POST /api/workspaces/:id/users`.

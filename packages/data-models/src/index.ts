@@ -5,6 +5,7 @@ export { sessionSchema, getSessionModel, Session, type SessionDocument } from '.
 export { notificationSchema, getNotificationModel, Notification, type NotificationDocument, type NotificationChannel, type NotificationStatus } from './schemas/notification';
 export { contactSchema, getContactModel, Contact, type ContactDocument, type ContactRole, type ContactStatus } from './schemas/contact';
 export { jsonataTransformSchema, getJsonataTransformModel, JsonataTransform, type JsonataTransformDocument, type JsonataTransformStatus } from './schemas/jsonata-transform';
+export { pipelineSchema, getPipelineModel, Pipeline, type PipelineDocument, type PipelineStatus } from './schemas/pipeline';
 
 import type { Connection } from 'mongoose';
 import { getWorkspaceModel } from './schemas/workspace';
@@ -14,6 +15,7 @@ import { getSessionModel } from './schemas/session';
 import { getNotificationModel } from './schemas/notification';
 import { getContactModel } from './schemas/contact';
 import { getJsonataTransformModel } from './schemas/jsonata-transform';
+import { getPipelineModel } from './schemas/pipeline';
 
 export const makeModels = (conn: Connection) => ({
   Workspace: getWorkspaceModel(conn),
@@ -22,7 +24,8 @@ export const makeModels = (conn: Connection) => ({
   Session: getSessionModel(conn),
   Notification: getNotificationModel(conn),
   Contact: getContactModel(conn),
-  JsonataTransform: getJsonataTransformModel(conn)
+  JsonataTransform: getJsonataTransformModel(conn),
+  Pipeline: getPipelineModel(conn)
 });
 
 export type Models = {
@@ -33,4 +36,5 @@ export type Models = {
   Notification: ReturnType<typeof getNotificationModel>;
   Contact: ReturnType<typeof getContactModel>;
   JsonataTransform: ReturnType<typeof getJsonataTransformModel>;
+  Pipeline: ReturnType<typeof getPipelineModel>;
 };

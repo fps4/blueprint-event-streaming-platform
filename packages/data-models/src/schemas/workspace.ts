@@ -5,6 +5,7 @@ export interface WorkspaceDocument extends Document<string> {
   name: string;
   status: 'active' | 'inactive';
   allowedOrigins?: string[];
+  description?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -14,6 +15,7 @@ export const workspaceSchema = new mongoose.Schema({
   name: { type: String, required: true },
   status: { type: String, enum: ['active', 'inactive'], default: 'active', index: true },
   allowedOrigins: { type: [String], default: [] },
+  description: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 }, {
