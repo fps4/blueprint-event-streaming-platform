@@ -9,12 +9,13 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
 
+import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
-import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
 import { listWorkspaces } from 'src/api/workspace';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { paths } from 'src/routes/paths';
+
+import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
 export function WorkspaceListView() {
   const [workspaces, setWorkspaces] = useState([]);
@@ -36,8 +37,8 @@ export function WorkspaceListView() {
   }, []);
 
   const renderCard = (ws) => (
-    <Grid item key={ws.id} xs={12} sm={6} md={4}>
-      <Card>
+    <Grid item key={ws.id} xs={12} sm={6} md={4}> 
+      <Card variant="outlined">
         <CardContent>
           <Stack spacing={1}>
             <Typography variant="subtitle1">{ws.name}</Typography>
