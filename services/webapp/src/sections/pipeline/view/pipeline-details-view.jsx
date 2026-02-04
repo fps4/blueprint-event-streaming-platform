@@ -11,6 +11,7 @@ import { getPipeline } from 'src/api/pipeline';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+import { PipelineFlow } from '../flow';
 
 export function PipelineDetailsView({ pipelineId }) {
   const [pipeline, setPipeline] = useState(null);
@@ -49,15 +50,13 @@ export function PipelineDetailsView({ pipelineId }) {
         </Typography>
       )}
 
-      <Card sx={{ minHeight: 400, p: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Card sx={{ minHeight: 400, p: 0, overflow: 'hidden' }}>
         {loading ? (
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ p: 3, textAlign: 'center' }}>
             Loading pipeline...
           </Typography>
         ) : (
-          <Typography variant="body2" color="text.secondary">
-            Pipeline form placeholder
-          </Typography>
+          <PipelineFlow pipelineId={pipelineId} pipeline={pipeline} />
         )}
       </Card>
     </DashboardContent>
