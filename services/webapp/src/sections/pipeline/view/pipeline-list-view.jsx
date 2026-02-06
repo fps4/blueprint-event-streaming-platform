@@ -41,6 +41,11 @@ export function PipelineListView() {
   const columns = useMemo(
     () => [
       {
+        field: 'code',
+        headerName: 'Code',
+        width: 90,
+      },
+      {
         field: 'name',
         headerName: 'Name',
         flex: 1,

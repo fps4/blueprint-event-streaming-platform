@@ -3,6 +3,7 @@ import mongoose, { Connection, Model, Document } from 'mongoose';
 export interface WorkspaceDocument extends Document<string> {
   _id: string;
   name: string;
+  code: string;
   status: 'active' | 'inactive';
   allowedOrigins?: string[];
   description?: string;
@@ -13,6 +14,7 @@ export interface WorkspaceDocument extends Document<string> {
 export const workspaceSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   name: { type: String, required: true },
+  code: { type: String, required: true, unique: true, length: 4 },
   status: { type: String, enum: ['active', 'inactive'], default: 'active', index: true },
   allowedOrigins: { type: [String], default: [] },
   description: { type: String, default: '' },

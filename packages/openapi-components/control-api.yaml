@@ -111,6 +111,7 @@ components:
       required:
         - _id
         - name
+        - code
         - status
       properties:
         _id:
@@ -125,6 +126,12 @@ components:
           description: Human-readable workspace name.
           examples:
             - ACME Corporation
+        code:
+          type: string
+          pattern: ^[A-Z0-9]{4}$
+          description: Unique 4-letter alphanumeric code for workspace.
+          examples:
+            - AB12
         status:
           type: string
           enum: [active, inactive]
@@ -156,6 +163,7 @@ components:
         - _id
         - workspaceId
         - name
+        - code
         - status
       properties:
         _id:
@@ -172,6 +180,12 @@ components:
           description: Pipeline name.
           examples:
             - User Events Enrichment
+        code:
+          type: string
+          pattern: ^[A-Z0-9]{4}$
+          description: Unique 4-letter alphanumeric code for pipeline.
+          examples:
+            - XY89
         description:
           type: string
           maxLength: 1000

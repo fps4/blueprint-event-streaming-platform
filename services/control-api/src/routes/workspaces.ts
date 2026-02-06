@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { makeModels } from '@event-streaming-platform/data-models';
 import { getConnection } from '../lib/db.js';
 import { log, toId } from './helpers.js';
+import { generateUniqueCode } from '../lib/code-generator.js';
 
 export function workspaceRoutes() {
   const router = Router();
@@ -35,8 +36,10 @@ export function workspaceRoutes() {
       ? (req.body.allowedOrigins as unknown[]).map((v: unknown) => String(v ?? '').trim()).filter(Boolean)
       : [];
     if (!name) return res.status(400).json({ error: 'name is required' });
-    const created = await Workspace.create({ _id, name, description, status: 'active', allowedOrigins });
-    log.info({ workspaceId: _id }, 'workspace created');
+    
+    const code = await generateUniqueCode(Workspace);
+    const created = await Workspace.create({ _id, name, code, description, status: 'active', allowedOrigins });
+    log.info({ workspaceId: _id, code }, 'workspace created');
     res.status(201).json(created);
   });
 

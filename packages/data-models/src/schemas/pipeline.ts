@@ -23,6 +23,7 @@ export interface PipelineDocument extends Document<string> {
   _id: string;
   workspaceId: string;
   name: string;
+  code: string;
   description?: string;
   status: PipelineStatus;
   streams: StreamDefinition[];
@@ -54,6 +55,7 @@ export const pipelineSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   workspaceId: { type: String, required: true, index: true },
   name: { type: String, required: true, trim: true },
+  code: { type: String, required: true, unique: true, length: 4 },
   description: { type: String, default: '' },
   status: { type: String, enum: ['draft', 'active', 'paused', 'failed'], default: 'draft', index: true },
   streams: { type: [streamDefinitionSchema], default: [] },

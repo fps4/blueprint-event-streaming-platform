@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { makeModels } from '@event-streaming-platform/data-models';
 import { getConnection } from '../lib/db.js';
 import { log, toId } from './helpers.js';
+import { generateUniqueCode } from '../lib/code-generator.js';
 
 export function pipelineRoutes() {
   const router = Router({ mergeParams: true });
@@ -35,10 +36,12 @@ export function pipelineRoutes() {
     const workspaceId = toId(req.body?.workspaceId);
     if (!workspaceId) return res.status(400).json({ error: 'workspaceId is required' });
 
+    const code = await generateUniqueCode(Pipeline);
     const doc = await Pipeline.create({
       _id,
       workspaceId,
       name,
+      code,
       description: req.body?.description || '',
       status: (req.body?.status || 'draft') as unknown,
       streams: Array.isArray(req.body?.streams) ? req.body.streams : [],
@@ -46,7 +49,7 @@ export function pipelineRoutes() {
       sinkClients: Array.isArray(req.body?.sinkClients) ? req.body.sinkClients : [],
       transform: req.body?.transform || null
     });
-    log.info({ pipelineId: _id, workspaceId }, 'pipeline created');
+    log.info({ pipelineId: _id, workspaceId, code }, 'pipeline created');
     res.status(201).json(doc);
   });
 

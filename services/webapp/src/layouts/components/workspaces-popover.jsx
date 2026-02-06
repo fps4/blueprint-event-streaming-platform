@@ -80,7 +80,7 @@ export function WorkspacesPopover({ data = [], sx, ...other }) {
         component="span"
         sx={{ typography: 'subtitle2', display: { xs: 'none', [mediaQuery]: 'inline-flex' } }}
       >
-        {workspace?.name}
+        {workspace?.name} {workspace?.code && `(${workspace.code})`}
       </Box>
 
       <Label
@@ -125,7 +125,7 @@ export function WorkspacesPopover({ data = [], sx, ...other }) {
                 variant="body2"
                 sx={{ flexGrow: 1, fontWeight: 'fontWeightMedium' }}
               >
-                {option.name}
+                {option.name} {option.code && `(${option.code})`}
               </Typography>
 
               <Label color={option.plan === 'Free' ? 'default' : 'info'}>{option.plan}</Label>

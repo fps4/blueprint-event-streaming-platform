@@ -11,6 +11,7 @@ import { getPipeline } from 'src/api/pipeline';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+
 import { PipelineFlow } from '../flow';
 
 export function PipelineDetailsView({ pipelineId }) {
@@ -35,11 +36,11 @@ export function PipelineDetailsView({ pipelineId }) {
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading={pipeline?.name || 'Pipeline'}
+        heading={pipeline?.name ? `${pipeline.name} ${pipeline.code ? `(${pipeline.code})` : ''}` : 'Pipeline'}
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           { name: 'Pipelines', href: paths.dashboard.pipeline.root },
-          { name: pipeline?.name || 'Details' },
+          { name: pipeline?.name ? `${pipeline.name} ${pipeline.code ? `(${pipeline.code})` : ''}` : 'Details' },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />

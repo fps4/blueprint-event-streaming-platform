@@ -56,7 +56,9 @@ export function WorkspaceListView() {
       >
         <CardContent sx={{ height: '100%' }}>
           <Stack spacing={1}>
-            <Typography variant="h5">{ws.name}</Typography>
+            <Typography variant="h5">
+              {ws.name} {ws.code && `(${ws.code})`}
+            </Typography>
             <Typography variant="body2" color="text.secondary">
               Status: {ws.status || 'unknown'}
             </Typography>
@@ -141,7 +143,9 @@ export function WorkspaceListView() {
                 }}
               >
                 <Stack spacing={0.5}>
-                  <Typography variant="h6">Workspace: {selectedWorkspace.name}</Typography>
+                  <Typography variant="h6">
+                    Workspace: {selectedWorkspace.name} {selectedWorkspace.code && `(${selectedWorkspace.code})`}
+                  </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Status: {selectedWorkspace.status || 'unknown'}
                   </Typography>
