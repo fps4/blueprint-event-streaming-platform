@@ -58,6 +58,16 @@ export const paths = {
         edit: (pipelineId) => `${ROOTS.DASHBOARD}/pipeline/${pipelineId}/edit`,
         flow: (pipelineId) => `${ROOTS.DASHBOARD}/pipeline/${pipelineId}/details`,
       },
+      client: {
+        root: `${ROOTS.DASHBOARD}/client`,
+        new: `${ROOTS.DASHBOARD}/client/new`,
+        edit: (clientId) => `${ROOTS.DASHBOARD}/client/${clientId}/edit`,
+      },
+      user: {
+        root: `${ROOTS.DASHBOARD}/user`,
+        new: `${ROOTS.DASHBOARD}/user/new`,
+        edit: (userId) => `${ROOTS.DASHBOARD}/user/${userId}/edit`,
+      },
       group: {
           root: `${ROOTS.DASHBOARD}/group`,
           five: `${ROOTS.DASHBOARD}/group/five`,

@@ -2,7 +2,7 @@ import { paths } from 'src/routes/paths';
 
 import { CONFIG } from 'src/global-config';
 
-import { Label } from 'src/components/label';
+//import { Label } from 'src/components/label';
 import { SvgColor } from 'src/components/svg-color';
 
 // ----------------------------------------------------------------------
@@ -10,11 +10,9 @@ import { SvgColor } from 'src/components/svg-color';
 const icon = (name) => <SvgColor src={`${CONFIG.assetsDir}/assets/icons/navbar/${name}.svg`} />;
 
 const ICONS = {
-   job: icon('ic-job'),
-  blog: icon('ic-blog'),
+  job: icon('ic-job'),
   chat: icon('ic-chat'),
   mail: icon('ic-mail'),
-  user: icon('ic-user'),
   file: icon('ic-file'),
   lock: icon('ic-lock'),
   tour: icon('ic-tour'),
@@ -36,6 +34,13 @@ const ICONS = {
   analytics: icon('ic-analytics'),
   dashboard: icon('ic-dashboard'),
   parameter: icon('ic-parameter'),
+  // Add more icons as needed
+  workspace: icon('crop-svgrepo-com'),
+  client: icon('ferris-wheel-svgrepo-com'),
+  pipeline: icon('routing-3-svgrepo-com'),
+  user: icon('users-group-two-rounded-svgrepo-com'),
+  wiki: icon('ic-blog'),
+
 };
 
 // ----------------------------------------------------------------------
@@ -47,28 +52,28 @@ export const navData = [
   {
     subheader: 'Overview',
     items: [
-      {
-        title: 'One',
-        path: paths.dashboard.root,
-        icon: ICONS.dashboard,
-        info: <Label>v{CONFIG.appVersion}</Label>,
-      },
-      { title: 'Two', path: paths.dashboard.two, icon: ICONS.ecommerce },
-      { title: 'Three', path: paths.dashboard.three, icon: ICONS.analytics },
-      { title: 'Workspaces', path: paths.dashboard.workspace.root, icon: ICONS.folder },
-      { title: 'Pipelines', path: paths.dashboard.pipeline.root, icon: ICONS.parameter },
+      // {
+      //   title: 'One',
+      //   path: paths.dashboard.root,
+      //   icon: ICONS.dashboard,
+      //   info: <Label>v{CONFIG.appVersion}</Label>,
+      // },
+      { title: 'Workspaces', path: paths.dashboard.workspace.root, icon: ICONS.workspace },
+      { title: 'Pipelines', path: paths.dashboard.pipeline.root, icon: ICONS.pipeline },
+      { title: 'Clients', path: paths.dashboard.client.root, icon: ICONS.client },
+      { title: 'Users', path: paths.dashboard.group.root, icon: ICONS.user },
     ],
   },
   /**
    * Management
    */
   {
-    subheader: 'Management',
+    subheader: 'Wiki',
     items: [
       {
-        title: 'Group',
+        title: 'Docs',
         path: paths.dashboard.group.root,
-        icon: ICONS.user,
+        icon: ICONS.wiki,
         children: [
           { title: 'Four', path: paths.dashboard.group.root },
           { title: 'Five', path: paths.dashboard.group.five },
