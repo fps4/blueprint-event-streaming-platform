@@ -5,13 +5,15 @@ Shared models used by services in [authorizer.md](./authorizer.md) and [control-
 Shared Mongoose schemas and model factories that all services use for tenant-scoped data. Package name: `@event-streaming-platform/data-models`.
 
 ## What it provides
-- Mongoose schemas and models for `Workspace`, `Client`, `User`, `Session`, `Notification`, and `Contact`
+- Mongoose schemas and models for `Workspace`, `Pipeline`, `Client`, `Connection`, `User`, `Session`, `Notification`, and `Contact`
 - `makeModels(conn)` helper that registers all models on a given `mongoose.Connection`
 - Dual CJS/ESM build with emitted typings via `tsup` (see package.json scripts)
 
 ## Schema highlights
-- **Workspace**: `_id`, `name`, `status` (`active`/`inactive`), `allowedOrigins`; status indexed.
-- **Client**: `_id`, `status` (`active`/`inactive`, indexed), `secretHash`/`secretSalt`, `allowedScopes`, `allowedTopics`; global entity linked to workspaces through pipeline registration.
+- **Workspace**: `_id`, `name`, `code` (4 lowercase letters a-z, unique), `status` (`active`/`inactive`), `allowedOrigins`; status indexed.
+- **Pipeline**: `_id`, `workspaceId` (ref, indexed), `name`, `code` (4 lowercase letters a-z), `status`, `streams` (array of StreamConfig with name/variant/schema), `sourceClients` (array of ClientConfigRef with clientId/connectorType/streamName), `sinkConnections` (array of ConnectionConfigRef with connectionId/connectorType/streamName), `transform` (optional Jsonata expression); linked to Workspace, Clients, and Connections.
+- **Client**: `_id`, `name`, `status` (`active`/`inactive`, indexed), `secretHash`/`secretSalt`, `allowedScopes`, `allowedTopics`; global entity used as authenticated source producers linked to pipelines through `Pipeline.sourceClients`.
+- **Connection**: `_id`, `name`, `type` (`HTTP`/`S3`), `status` (`active`/`inactive`, indexed), `config` (type-specific: url/method/headers for HTTP, bucket/region/accessKeyId/secretAccessKey for S3); global entity representing external sink destinations linked to pipelines through `Pipeline.sinkConnections`.
 - **User**: `_id`, `workspaceId` (ref, indexed), `username` (unique), password hash/salt, `roles`, `status` (`active`/`inactive`, indexed); virtual `workspace` for population.
 - **Session**: `_id` (session UUID), `workspaceId` (ref, indexed), `principalId`, `principalType` (`client`/`user`, indexed), `scopes`, `topics`, arbitrary `context`, `status` (`active`/`revoked`, indexed), `expiresAt` (indexed); virtual `workspace` for population.
 - **Notification**: channel `slack|email` (indexed), `type` (indexed), `correlationId` (indexed), optional `tenantId`/`contactId`, channel-specific `target`, arbitrary `payload`, `status` (`queued`/`sent`/`failed`, indexed), optional `error` snapshot, `deliveredAt`.

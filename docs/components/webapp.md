@@ -16,13 +16,17 @@ How operators and integration engineers interact with the platform via the UI an
 - Documentation: view user documentation inside the UI.
 
 ## Capabilities (UI-facing)
-- Integrations & pipelines: create/update/publish/pause/resume; environment promotion with version pinning; start/stop pipelines.
-- Connectors: source and sink configuration using Control API connectors metadata; retries/backoff, timeouts, idempotency hints, headers.
+- Workspaces: create/edit workspaces with codes and allowed origins; list/filter workspaces.
+- Pipelines: create/edit pipelines with streams and source/sink connectors; visualize pipeline flows with React Flow; start/stop pipelines.
+- Clients: create/edit global authenticated clients (source producers); manage allowed scopes/topics; list/filter clients.
+- Connections: create/edit external sink destinations (HTTP endpoints, S3 buckets); manage type-specific configurations; list/filter connections.
+- Source Connectors: link clients to pipeline source streams with connector type (HTTP, S3); visualize in pipeline flow diagram.
+- Sink Connectors: link connections to pipeline sink streams for data delivery (placeholder for future implementation).
+- Transformations (Jsonata): configure Jsonata expressions for pipeline transforms; version pinning (via worker-jsonata).
 - Topics & broker config: display retention/partitioning/compaction per naming convention; read-only guardrails.
-- Schema catalog: browse, diff, tag (PII), view impact; pin versions to integrations.
-- Transformations (ksqlDB/Jsonata): select and preview SQL/expressions; validate against source/destination schemas; version pinning.
-- Replay & DLQ: select window or IDs, dry-run validation, rate limiting, target schema/mapping versions, audit trail.
 - Observability: integration status (active/paused/failed), per-message trace (ingest → transform → delivery/DLQ), Kafka metrics, alerts/notifications for connector failures.
+- Schema catalog: browse, diff, tag (PII), view impact; pin versions to integrations (future).
+- Replay & DLQ: select window or IDs, dry-run validation, rate limiting, target schema/mapping versions, audit trail (future).
 - Docs aggregation: shared Swagger/Redoc portal for platform services and user docs.
 
 ## Related Services
