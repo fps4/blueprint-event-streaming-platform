@@ -7,6 +7,7 @@ export async function listWorkspaces(signal) {
   const items = Array.isArray(res.data?.items) ? res.data.items : [];
   return items.map((ws) => ({
     id: ws._id ?? ws.id,
+    code: ws.code ?? '',
     name: ws.name ?? 'Untitled workspace',
     description: ws.description ?? '',
     status: ws.status ?? 'unknown',
@@ -20,6 +21,7 @@ export async function getWorkspace(id, signal) {
   const ws = res.data;
   return {
     id: ws._id ?? ws.id,
+    code: ws.code ?? '',
     name: ws.name ?? 'Untitled workspace',
     description: ws.description ?? '',
     status: ws.status ?? 'unknown',

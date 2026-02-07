@@ -17,14 +17,47 @@ export function pipelineRoutes() {
 
   router.get('/pipelines/:pipelineId', async (req, res) => {
     const conn = await getConnection();
-    const { Pipeline } = makeModels(conn);
+    const { Pipeline, Workspace, Client } = makeModels(conn);
     const _id = toId(req.params.pipelineId);
     if (!_id) return res.status(400).json({ error: 'pipelineId is required' });
     
     const doc = await Pipeline.findOne({ _id }).lean().exec();
     if (!doc) return res.status(404).json({ error: 'pipeline not found' });
     
-    res.json(doc);
+    // Fetch workspace to get its code
+    const workspace = await Workspace.findOne({ _id: doc.workspaceId }).lean().exec();
+    
+    // Fetch client names for sourceClients and sinkClients
+    const allClientIds = [
+      ...(doc.sourceClients || []).map((c: any) => c.clientId),
+      ...(doc.sinkClients || []).map((c: any) => c.clientId),
+    ].filter(Boolean);
+    
+    const clients = allClientIds.length > 0
+      ? await Client.find({ _id: { $in: allClientIds } }).lean().exec()
+      : [];
+    
+    const clientMap = new Map(clients.map((c: any) => [c._id, c.name]));
+    
+    // Enrich sourceClients and sinkClients with client names
+    const enrichedSourceClients = (doc.sourceClients || []).map((sc: any) => ({
+      ...sc,
+      clientName: clientMap.get(sc.clientId) || sc.clientId,
+    }));
+    
+    const enrichedSinkClients = (doc.sinkClients || []).map((sc: any) => ({
+      ...sc,
+      clientName: clientMap.get(sc.clientId) || sc.clientId,
+    }));
+    
+    const response = {
+      ...doc,
+      workspaceCode: workspace?.code || '',
+      sourceClients: enrichedSourceClients,
+      sinkClients: enrichedSinkClients,
+    };
+    
+    res.json(response);
   });
 
   router.post('/pipelines', async (req, res) => {
@@ -88,6 +121,7 @@ export function pipelineRoutes() {
 
     if (req.body?.sourceClients !== undefined) {
       if (!Array.isArray(req.body.sourceClients)) return res.status(400).json({ error: 'sourceClients must be an array' });
+      log.info({ sourceClients: req.body.sourceClients }, 'Updating sourceClients');
       updates.sourceClients = req.body.sourceClients;
     }
 

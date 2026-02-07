@@ -63,7 +63,7 @@ Each node type represents a pipeline component and renders:
 
 **Node Types**:
 - **`source-node.jsx`**: Represents HTTP source or Kafka source connectors. Outputs to a topic.
-- **`topic-node.jsx`**: Represents a Kafka topic with naming convention display (`<env>.<workspace>.<stream>.<variant>`). Shows partition count, retention, ACLs summary.
+- **`topic-node.jsx`**: Represents a Kafka topic with naming convention display (`<env>.<workspace_code>.<pipeline_code>.<stream>.<variant>`). Shows partition count, retention, ACLs summary.
 - **`transform-node.jsx`**: Represents a Jsonata worker. Input topic → transform logic → output topic.
 - **`sink-node.jsx`**: Represents HTTP sink, DB sink, or other consumers. Inputs from a topic.
 
@@ -86,7 +86,7 @@ Each node type represents a pipeline component and renders:
 
 ### 6. `templates/` (Pre-Built Flows)
 Export JS objects defining nodes + edges for common patterns:
-- **`basic-ingest.js`**: HTTP source → `<env>.<workspace>.<stream>.raw` topic
+- **`basic-ingest.js`**: HTTP source → `<env>.<workspace_code>.<pipeline_code>.<stream>.raw` topic
 - **`transform-pipeline.js`**: HTTP source → raw topic → Jsonata worker → enriched topic → HTTP sink
 - **`multi-sink.js`**: One source → multiple topics/sinks (fan-out)
 
@@ -94,7 +94,7 @@ Templates are JSON-serializable and compatible with React Flow's `nodes`/`edges`
 
 ### 7. `utils/flow-validator.js`
 Validates pipeline topology:
-- **Topic Naming**: Enforces `<env>.<workspace>.<stream>.<variant>` convention
+- **Topic Naming**: Enforces `<env>.<workspace_code>.<pipeline_code>.<stream>.<variant>` convention
 - **Required Topics**: DLQ/retry topics exist for each source/worker
 - **Connection Rules**: Sources must output to topics, workers must have input + output topics, sinks must input from topics
 - **Duplicate Names**: No duplicate topic names in same pipeline
@@ -196,7 +196,7 @@ The `flow-serializer.js` ensures both stay synchronized on save.
 ## Platform Alignment
 
 ### Topic Naming Conventions
-- Topics must follow `<env>.<workspace>.<stream>.<variant>` format
+- Topics must follow `<env>.<workspace_code>.<pipeline_code>.<stream>.<variant>` format
 - Validator enforces max 249 chars, allowed chars: `a-zA-Z0-9._-`
 - DLQ topics (`*.dlq`) and retry topics (`*.retry`) are first-class and auto-suggested
 

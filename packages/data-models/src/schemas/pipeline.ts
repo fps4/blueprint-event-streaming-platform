@@ -11,6 +11,8 @@ export interface StreamDefinition {
 export interface ClientConfigRef {
   clientId: string;
   role: 'source' | 'sink';
+  connectorType?: 'S3' | 'HTTP';
+  streamName?: string;
   description?: string;
 }
 
@@ -43,6 +45,8 @@ const streamDefinitionSchema = new mongoose.Schema({
 const clientConfigRefSchema = new mongoose.Schema({
   clientId: { type: String, required: true, trim: true },
   role: { type: String, enum: ['source', 'sink'], required: true },
+  connectorType: { type: String, enum: ['S3', 'HTTP'] },
+  streamName: { type: String, trim: true },
   description: { type: String }
 }, { _id: false });
 

@@ -39,7 +39,7 @@ const ICONS = {
   client: icon('ferris-wheel-svgrepo-com'),
   pipeline: icon('routing-3-svgrepo-com'),
   user: icon('users-group-two-rounded-svgrepo-com'),
-  wiki: icon('ic-blog'),
+  wiki: icon('document-1-svgrepo-com'),
 
 };
 

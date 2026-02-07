@@ -8,10 +8,13 @@ export async function listPipelines(signal) {
     const items = Array.isArray(res.data?.items) ? res.data.items : [];
     return items.map((p) => ({
       id: p._id ?? p.id,
+      code: p.code ?? '',
       name: p.name ?? 'Untitled pipeline',
       status: p.status ?? 'unknown',
       description: p.description ?? '',
       workspaceId: p.workspaceId ?? '',
+      sourceTopic: p.sourceTopic ?? '',
+      targetTopic: p.targetTopic ?? '',
     }));
   } catch (err) {
     if (err?.response?.status === 404) {
@@ -39,10 +42,12 @@ export async function getPipeline(id, signal) {
     const p = res.data ?? {};
     return {
       id: p._id ?? p.id ?? id,
+      code: p.code ?? '',
       name: p.name ?? 'Untitled pipeline',
       status: p.status ?? 'unknown',
       description: p.description ?? '',
       workspaceId: p.workspaceId ?? p.workspace ?? '',
+      workspaceCode: p.workspaceCode ?? '',
       streams: Array.isArray(p.streams) ? p.streams : [],
       sourceClients: Array.isArray(p.sourceClients) ? p.sourceClients : [],
       sinkClients: Array.isArray(p.sinkClients) ? p.sinkClients : [],

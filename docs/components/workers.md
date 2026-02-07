@@ -10,7 +10,7 @@ Purpose-built runtimes that take raw events from source topics, apply user-defin
 Current implementation: `services/worker-jsonata` consumes `JsonataTransform` configs from Mongo (via control-api data models), subscribes to each active `sourceTopic`, applies the compiled Jsonata expression, and produces to the configured `targetTopic`. On errors, it writes to DLQ (`<source>.dlq` or `DLQ_TOPIC`) with context and headers (`x-request-id`, `x-dlq-reason`).
 
 ## Responsibilities
-- Consume `raw` topics for an integration (pattern: `<env>.<workspace>.<stream>.raw`).
+- Consume `raw` topics for an integration (pattern: `<env>.<workspace_code>.<pipeline_code>.<stream>.raw`).
 - Validate payloads against the registered schema; attach schema ID/version to outbound records.
 - Apply the selected mapping (Jsonata/SQL/Streams) and emit to the corresponding `enriched` topic.
 - On transform/validation failure, emit to the integration’s `dlq` (and optionally `retry`) with failure context.

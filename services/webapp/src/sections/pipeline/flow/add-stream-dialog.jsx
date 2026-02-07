@@ -1,18 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+
+import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 
 const STREAM_NAME_REGEX = /^[a-zA-Z0-9._-]+$/;
-const MAX_STREAM_NAME_LENGTH = 100; // Conservative, considering full topic will be <env>.<workspace>.<stream>.<variant>
+const MAX_STREAM_NAME_LENGTH = 100; // Conservative, considering full topic will be <env>.<workspace_code>.<pipeline_code>.<stream>.<variant>
 
-export function AddStreamDialog({ open, onClose, onAdd, env, workspace }) {
+export function AddStreamDialog({ open, onClose, onAdd, env, workspaceCode, pipelineCode }) {
   const [streamName, setStreamName] = useState('');
   const [error, setError] = useState('');
 
@@ -55,8 +56,8 @@ export function AddStreamDialog({ open, onClose, onAdd, env, workspace }) {
     }
   };
 
-  const sourceTopic = `${env}.${workspace}.${streamName || '<name>'}.source`;
-  const sinkTopic = `${env}.${workspace}.${streamName || '<name>'}.sink`;
+  const sourceTopic = `${env}.${workspaceCode}.${pipelineCode}.${streamName || '<name>'}.source`;
+  const sinkTopic = `${env}.${workspaceCode}.${pipelineCode}.${streamName || '<name>'}.sink`;
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>

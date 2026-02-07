@@ -14,20 +14,22 @@ Kafka cluster operated by the platform team; all topics and ACLs are created via
 - Characters: alphanumerics plus `._-`; max length 249; no `.` or `..` path segments (matches `validateTopicName` from `@event-streaming-platform/connector-core`).
 - Pattern (env-scoped, multi-tenant):
   ```
-  <env>.<workspace>.<stream>.<variant>
+  <env>.<workspace_code>.<pipeline_code>.<stream>.<variant>
   ```
   - `env`: dev|test|prod
-  - `workspace`: normalized workspace slug/ID (lowercase, `-` or `_`)
-  - `stream`: business domain/entity (e.g., `orders`, `payments`)
-  - `variant`: `raw` (ingest), `enriched` (post-transform), `dlq`, `retry`
+  - `workspace_code`: 4-character lowercase code (a-z) generated at workspace creation
+  - `pipeline_code`: 4-character lowercase code (a-z) generated at pipeline creation
+  - `stream`: business domain/entity name (e.g., `orders`, `payments`)
+  - `variant`: `source` (input), `sink` (output), `raw`, `enriched`, `dlq`, `retry`
 - Client scoping: when clients own subsets, append client identifier before variant, e.g.:
   ```
-  <env>.<workspace>.client-<clientId>.<stream>.<variant>
+  <env>.<workspace_code>.<pipeline_code>.client-<clientId>.<stream>.<variant>
   ```
 - Examples:
-  - `dev.ws-acme.orders.raw`
-  - `prod.ws-acme.client-billing.payments.enriched`
-  - `prod.ws-acme.orders.dlq`
+  - `dev.abcd.wxyz.orders.source`
+  - `prod.abcd.wxyz.orders.sink`
+  - `prod.abcd.wxyz.client-billing.payments.enriched`
+  - `prod.abcd.wxyz.orders.dlq`
 
 ## Best Practices
 - **Partitioning**: size partitions to keep consumer lag within SLO; avoid over-partitioning small streams.

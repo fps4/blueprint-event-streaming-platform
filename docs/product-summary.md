@@ -49,7 +49,7 @@ This blueprint packages the core building blocks needed to run a multi-tenant â€
 
 ## Operational model
 
-- Standard topic naming convention: `<env>.<workspace>.<stream>.<variant>` with variants like `raw`, `enriched`, `dlq`, `retry`.
+- Standard topic naming convention: `<env>.<workspace_code>.<pipeline_code>.<stream>.<variant>` with variants like `source`, `sink`, `raw`, `enriched`, `dlq`, `retry`.
 - DLQ + replay are first-class UX flows (demo-critical): show a failing message landing in DLQ, fix mapping/schema, then replay.
 - Designed for strong observability: correlation IDs, lag/DLQ metrics, structured logs.
 
