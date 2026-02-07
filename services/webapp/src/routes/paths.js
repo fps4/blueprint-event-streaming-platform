@@ -63,6 +63,11 @@ export const paths = {
         new: `${ROOTS.DASHBOARD}/client/new`,
         edit: (clientId) => `${ROOTS.DASHBOARD}/client/${clientId}/edit`,
       },
+      connection: {
+        root: `${ROOTS.DASHBOARD}/connection`,
+        new: `${ROOTS.DASHBOARD}/connection/new`,
+        edit: (connectionId) => `${ROOTS.DASHBOARD}/connection/${connectionId}/edit`,
+      },
       user: {
         root: `${ROOTS.DASHBOARD}/user`,
         new: `${ROOTS.DASHBOARD}/user/new`,

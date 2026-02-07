@@ -182,13 +182,13 @@ export interface PipelineDocument extends Document<string> {
 
 **Schema Considerations**:
 - `flowConfig` is optional (nullable) to support pipelines created without visual editor
-- Store both visual representation (`flowConfig`) AND logical configuration (`streams`, `sourceClients`, `sinkClients`, `transform`)
+- Store both visual representation (`flowConfig`) AND logical configuration (`streams`, `sourceClients`, `sinkConnections`, `transform`)
 - The serializer ensures consistency between visual flow and logical config
 - Node `data` field stores node-specific configuration (topic names, transform IDs, connector configs)
 
 ### Dual Representation
 The pipeline has two complementary representations in MongoDB:
-- **Logical**: `streams[]`, `sourceClients[]`, `sinkClients[]`, `transform` (existing schema) — used by control-api to provision Kafka resources
+- **Logical**: `streams[]`, `sourceClients[]`, `sinkConnections[]`, `transform` (existing schema) — used by control-api to provision Kafka resources
 - **Visual**: `flowConfig` (new field) — used by webapp to render/edit the flow diagram
 
 The `flow-serializer.js` ensures both stay synchronized on save.

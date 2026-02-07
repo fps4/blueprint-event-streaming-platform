@@ -16,6 +16,13 @@ export interface ClientConfigRef {
   description?: string;
 }
 
+export interface ConnectionConfigRef {
+  connectionId: string;
+  connectorType: 'S3' | 'HTTP';
+  streamName?: string;
+  description?: string;
+}
+
 export interface TransformConfig {
   type: 'jsonata';
   transformId: string;
@@ -30,7 +37,7 @@ export interface PipelineDocument extends Document<string> {
   status: PipelineStatus;
   streams: StreamDefinition[];
   sourceClients: ClientConfigRef[];
-  sinkClients: ClientConfigRef[];
+  sinkConnections: ConnectionConfigRef[];
   transform?: TransformConfig;
   createdAt?: Date;
   updatedAt?: Date;
@@ -50,6 +57,13 @@ const clientConfigRefSchema = new mongoose.Schema({
   description: { type: String }
 }, { _id: false });
 
+const connectionConfigRefSchema = new mongoose.Schema({
+  connectionId: { type: String, required: true, trim: true },
+  connectorType: { type: String, enum: ['S3', 'HTTP'], required: true },
+  streamName: { type: String, trim: true },
+  description: { type: String }
+}, { _id: false });
+
 const transformConfigSchema = new mongoose.Schema({
   type: { type: String, enum: ['jsonata'], required: true },
   transformId: { type: String, required: true, trim: true }
@@ -64,7 +78,7 @@ export const pipelineSchema = new mongoose.Schema({
   status: { type: String, enum: ['draft', 'active', 'paused', 'failed'], default: 'draft', index: true },
   streams: { type: [streamDefinitionSchema], default: [] },
   sourceClients: { type: [clientConfigRefSchema], default: [] },
-  sinkClients: { type: [clientConfigRefSchema], default: [] },
+  sinkConnections: { type: [connectionConfigRefSchema], default: [] },
   transform: { type: transformConfigSchema, default: null },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

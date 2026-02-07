@@ -17,7 +17,7 @@ export function pipelineRoutes() {
 
   router.get('/pipelines/:pipelineId', async (req, res) => {
     const conn = await getConnection();
-    const { Pipeline, Workspace, Client } = makeModels(conn);
+    const { Pipeline, Workspace, Client, Connection } = makeModels(conn);
     const _id = toId(req.params.pipelineId);
     if (!_id) return res.status(400).json({ error: 'pipelineId is required' });
     
@@ -27,10 +27,9 @@ export function pipelineRoutes() {
     // Fetch workspace to get its code
     const workspace = await Workspace.findOne({ _id: doc.workspaceId }).lean().exec();
     
-    // Fetch client names for sourceClients and sinkClients
+    // Fetch client names for sourceClients
     const allClientIds = [
       ...(doc.sourceClients || []).map((c: any) => c.clientId),
-      ...(doc.sinkClients || []).map((c: any) => c.clientId),
     ].filter(Boolean);
     
     const clients = allClientIds.length > 0
@@ -39,22 +38,34 @@ export function pipelineRoutes() {
     
     const clientMap = new Map(clients.map((c: any) => [c._id, c.name]));
     
-    // Enrich sourceClients and sinkClients with client names
+    // Fetch connection names for sinkConnections
+    const allConnectionIds = [
+      ...(doc.sinkConnections || []).map((c: any) => c.connectionId),
+    ].filter(Boolean);
+    
+    const connections = allConnectionIds.length > 0
+      ? await Connection.find({ _id: { $in: allConnectionIds } }).lean().exec()
+      : [];
+    
+    const connectionMap = new Map(connections.map((c: any) => [c._id, c.name]));
+    
+    // Enrich sourceClients with client names
     const enrichedSourceClients = (doc.sourceClients || []).map((sc: any) => ({
       ...sc,
       clientName: clientMap.get(sc.clientId) || sc.clientId,
     }));
     
-    const enrichedSinkClients = (doc.sinkClients || []).map((sc: any) => ({
+    // Enrich sinkConnections with connection names
+    const enrichedSinkConnections = (doc.sinkConnections || []).map((sc: any) => ({
       ...sc,
-      clientName: clientMap.get(sc.clientId) || sc.clientId,
+      connectionName: connectionMap.get(sc.connectionId) || sc.connectionId,
     }));
     
     const response = {
       ...doc,
       workspaceCode: workspace?.code || '',
       sourceClients: enrichedSourceClients,
-      sinkClients: enrichedSinkClients,
+      sinkConnections: enrichedSinkConnections,
     };
     
     res.json(response);
@@ -79,7 +90,7 @@ export function pipelineRoutes() {
       status: (req.body?.status || 'draft') as unknown,
       streams: Array.isArray(req.body?.streams) ? req.body.streams : [],
       sourceClients: Array.isArray(req.body?.sourceClients) ? req.body.sourceClients : [],
-      sinkClients: Array.isArray(req.body?.sinkClients) ? req.body.sinkClients : [],
+      sinkConnections: Array.isArray(req.body?.sinkConnections) ? req.body.sinkConnections : [],
       transform: req.body?.transform || null
     });
     log.info({ pipelineId: _id, workspaceId, code }, 'pipeline created');
@@ -125,9 +136,9 @@ export function pipelineRoutes() {
       updates.sourceClients = req.body.sourceClients;
     }
 
-    if (req.body?.sinkClients !== undefined) {
-      if (!Array.isArray(req.body.sinkClients)) return res.status(400).json({ error: 'sinkClients must be an array' });
-      updates.sinkClients = req.body.sinkClients;
+    if (req.body?.sinkConnections !== undefined) {
+      if (!Array.isArray(req.body.sinkConnections)) return res.status(400).json({ error: 'sinkConnections must be an array' });
+      updates.sinkConnections = req.body.sinkConnections;
     }
 
     if (req.body?.transform !== undefined) {

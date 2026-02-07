@@ -40,6 +40,7 @@ const ICONS = {
   pipeline: icon('routing-3-svgrepo-com'),
   user: icon('users-group-two-rounded-svgrepo-com'),
   wiki: icon('document-1-svgrepo-com'),
+  connection: icon('logout-svgrepo-com'),
 
 };
 
@@ -61,6 +62,7 @@ export const navData = [
       { title: 'Workspaces', path: paths.dashboard.workspace.root, icon: ICONS.workspace },
       { title: 'Pipelines', path: paths.dashboard.pipeline.root, icon: ICONS.pipeline },
       { title: 'Clients', path: paths.dashboard.client.root, icon: ICONS.client },
+      { title: 'Connections', path: paths.dashboard.connection.root, icon: ICONS.connection },
       { title: 'Users', path: paths.dashboard.group.root, icon: ICONS.user },
     ],
   },

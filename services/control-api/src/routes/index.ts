@@ -4,6 +4,7 @@ import { healthRoutes } from './health.js';
 import { topicRoutes } from './topics.js';
 import { workspaceRoutes } from './workspaces.js';
 import { clientRoutes } from './clients.js';
+import { connectionRoutes } from './connections.js';
 import { userRoutes } from './users.js';
 import { jsonataTransformRoutes } from './jsonataTransforms.js';
 import { pipelineRoutes } from './pipelines.js';
@@ -16,6 +17,7 @@ export function buildRouter() {
   router.use(topicRoutes());
   router.use(workspaceRoutes());
   router.use(clientRoutes());
+  router.use(connectionRoutes());
   router.use(userRoutes());
   router.use(jsonataTransformRoutes());
   router.use(pipelineRoutes());
