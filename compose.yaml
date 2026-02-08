@@ -221,6 +221,63 @@ services:
     volumes:
       - mongo_data:/data/db
 
+  loki:
+    container_name: loki
+    build:
+      context: .
+      dockerfile: services/observability/loki/Dockerfile
+    ports:
+      - "3100:3100"
+    networks:
+      - event-streaming-platform
+    volumes:
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    container_name: promtail
+    build:
+      context: .
+      dockerfile: services/observability/promtail/Dockerfile
+    depends_on:
+      - loki
+    networks:
+      - event-streaming-platform
+    volumes:
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - promtail-data:/run/promtail
+    environment:
+      - PROMTAIL_HOSTNAME=${PROMTAIL_HOSTNAME:-docker-host}
+    command:
+      - -config.file=/etc/promtail/config.yml
+      - -config.expand-env=true
+
+  observability-api:
+    container_name: observability-api
+    build:
+      context: .
+      dockerfile: services/observability/observability-api/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4040:4040"
+    depends_on:
+      - loki
+      - mongodb
+      - broker
+    networks:
+      - event-streaming-platform
+    environment:
+      LOG_PRETTY: ${LOG_PRETTY:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      OBSERVABILITY_API_PORT: ${OBSERVABILITY_API_PORT:-4040}
+      LOKI_URL: ${LOKI_URL:-http://loki:3100}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:?missing AUTH_JWT_SECRET}
+      AUTH_JWT_ISSUER: ${AUTH_JWT_ISSUER:-authorizer-service}
+      AUTH_JWT_AUDIENCE: ${AUTH_JWT_AUDIENCE:-api}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+
   # clickhouse:
   #   build:
   #     context: .
@@ -262,4 +319,8 @@ volumes:
   mongo_data:
     driver: local
   clickhouse_data:
+    driver: local
+  loki-data:
+    driver: local
+  promtail-data:
     driver: local

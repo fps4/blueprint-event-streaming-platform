@@ -41,6 +41,7 @@ const ICONS = {
   user: icon('users-group-two-rounded-svgrepo-com'),
   wiki: icon('document-1-svgrepo-com'),
   connection: icon('logout-svgrepo-com'),
+  observability: icon('pulse-svgrepo-com'), 
   infrastructure: icon('code-square-svgrepo-com'),
 
 };
@@ -74,11 +75,14 @@ export const navData = [
     subheader: 'Operations',
     items: [
       {
-        title: 'Infrastructure',
-        path: paths.dashboard.operations.root,
-        icon: ICONS.infrastructure,
+        title: 'Observability',
+        path: paths.dashboard.observability.root,
+        icon: ICONS.observability,
         children: [
-          { title: 'Logs', path: paths.dashboard.operations.logs },
+          { title: 'Overview', path: paths.dashboard.observability.root },
+          { title: 'Logs', path: paths.dashboard.observability.logs },
+          { title: 'Metrics', path: paths.dashboard.observability.metrics },
+          { title: 'Traces', path: paths.dashboard.observability.traces },
         ],
       },
     ],

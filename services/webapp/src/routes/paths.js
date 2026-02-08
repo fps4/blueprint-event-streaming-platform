@@ -73,9 +73,11 @@ export const paths = {
         new: `${ROOTS.DASHBOARD}/user/new`,
         edit: (userId) => `${ROOTS.DASHBOARD}/user/${userId}/edit`,
       },
-      operations: {
-          root: `${ROOTS.DASHBOARD}/operations`,
-          logs: `${ROOTS.DASHBOARD}/operations/logs`,
+      observability: {
+          root: `${ROOTS.DASHBOARD}/observability`,
+          logs: `${ROOTS.DASHBOARD}/observability/logs`,
+          metrics: `${ROOTS.DASHBOARD}/observability/metrics`,
+          traces: `${ROOTS.DASHBOARD}/observability/traces`,
       },      
       group: {
           root: `${ROOTS.DASHBOARD}/group`,

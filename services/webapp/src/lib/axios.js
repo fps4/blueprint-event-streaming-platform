@@ -6,10 +6,16 @@ import { CONFIG } from 'src/global-config';
 
 const axiosInstance = axios.create({ baseURL: CONFIG.serverUrl });
 const authAxiosInstance = axios.create({ baseURL: CONFIG.authServerUrl || CONFIG.serverUrl });
+const observabilityAxiosInstance = axios.create({ baseURL: CONFIG.observabilityUrl || CONFIG.serverUrl });
 
 axiosInstance.interceptors.response.use((response) => response, (error) => Promise.reject(error));
 
 authAxiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => Promise.reject(error)
+);
+
+observabilityAxiosInstance.interceptors.response.use(
   (response) => response,
   (error) => Promise.reject(error)
 );
@@ -42,3 +48,4 @@ export const endpoints = {
 };
 
 export const authClient = authAxiosInstance;
+export const observabilityClient = observabilityAxiosInstance;

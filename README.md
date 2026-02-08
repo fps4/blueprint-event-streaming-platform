@@ -23,11 +23,12 @@ Deployed locally via Docker Compose (see `compose.yaml`):
 - Kafka platform layer: **Apache Kafka**, **Schema Registry**, **Kafka Connect**, (optional) **ksqlDB**
 - Control plane: **control-api** (MongoDB-backed)
 - Security: **authorizer** (JWT issuance/refresh)
+- Observability: **observability-api** (workspace-scoped logs, metrics, traces via Loki)
 - Data plane:
   - `connector-http-source` (`POST /ingest/:topic`)
   - `worker-jsonata` (Kafka → Kafka transforms, DLQ on failure)
   - `connector-http-sink` (consumer skeleton today; future: REST delivery)
-- Supporting infra: **MongoDB** (state/auth), optional **ClickHouse** scaffolding
+- Supporting infra: **MongoDB** (state/auth), **Loki + Promtail** (log aggregation), optional **ClickHouse** scaffolding
 
 ## Operational model
 
