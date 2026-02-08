@@ -11,13 +11,13 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 
-const STREAM_NAME_REGEX = /^[a-zA-Z0-9._-]+$/;
+const STREAM_NAME_REGEX = /^[a-z0-9._-]+$/;
 const MAX_STREAM_NAME_LENGTH = 100; // Conservative, considering full topic will be <env>.<workspace_code>.<pipeline_code>.<stream>.<variant>
 
 const STREAM_TYPES = [
   { value: 'source', label: 'Source' },
   { value: 'sink', label: 'Sink' },
-  { value: 'dlq', label: 'DLQ (Dead Letter Queue)' },
+  { value: 'dlq', label: 'Failure' },
   { value: 'replay', label: 'Replay' },
 ];
 
@@ -34,19 +34,26 @@ export function AddStreamDialog({ open, onClose, onAdd, env, workspaceCode, pipe
       return `Stream name must be ${MAX_STREAM_NAME_LENGTH} characters or less`;
     }
     if (!STREAM_NAME_REGEX.test(name)) {
-      return 'Stream name can only contain: a-z, A-Z, 0-9, . _ -';
+      return 'Stream name can only contain: a-z, 0-9, . _ -';
     }
     return '';
   };
 
+  const normalizeStreamName = (name) =>
+    name
+      .toLowerCase() // Convert to lowercase
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^a-z0-9._-]/g, ''); // Remove any other special characters
+
   const handleAdd = () => {
-    const validationError = validateStreamName(streamName);
+    const normalizedName = normalizeStreamName(streamName);
+    const validationError = validateStreamName(normalizedName);
     if (validationError) {
       setError(validationError);
       return;
     }
 
-    onAdd(streamName.trim(), streamType);
+    onAdd(normalizedName.trim(), streamType);
     setStreamName('');
     setStreamType('source');
     setError('');
@@ -61,7 +68,9 @@ export function AddStreamDialog({ open, onClose, onAdd, env, workspaceCode, pipe
   };
 
   const handleNameChange = (e) => {
-    setStreamName(e.target.value);
+    const inputValue = e.target.value;
+    const normalizedValue = normalizeStreamName(inputValue);
+    setStreamName(normalizedValue);
     if (error) {
       setError('');
     }
@@ -86,7 +95,7 @@ export function AddStreamDialog({ open, onClose, onAdd, env, workspaceCode, pipe
           value={streamName}
           onChange={handleNameChange}
           error={!!error}
-          helperText={error || 'Allowed characters: a-z, A-Z, 0-9, . _ -'}
+          helperText={error || 'Lowercase only. Spaces become hyphens. Allowed: a-z, 0-9, . _ -'}
           onKeyPress={(e) => {
             if (e.key === 'Enter') {
               handleAdd();

@@ -81,6 +81,16 @@ export function pipelineRoutes() {
     const workspaceId = toId(req.body?.workspaceId);
     if (!workspaceId) return res.status(400).json({ error: 'workspaceId is required' });
 
+    // Validate transforms array if provided
+    const transforms = Array.isArray(req.body?.transforms) ? req.body.transforms : [];
+    if (transforms.length > 0) {
+      const targetStreams = transforms.map((t: any) => t.targetStream).filter(Boolean);
+      const uniqueTargets = new Set(targetStreams);
+      if (targetStreams.length !== uniqueTargets.size) {
+        return res.status(400).json({ error: 'transforms must have unique targetStream values' });
+      }
+    }
+
     const code = await generateUniqueCode(Pipeline);
     const doc = await Pipeline.create({
       _id,
@@ -92,7 +102,7 @@ export function pipelineRoutes() {
       streams: Array.isArray(req.body?.streams) ? req.body.streams : [],
       sourceClients: Array.isArray(req.body?.sourceClients) ? req.body.sourceClients : [],
       sinkConnections: Array.isArray(req.body?.sinkConnections) ? req.body.sinkConnections : [],
-      transform: req.body?.transform || null
+      transforms
     });
     log.info({ pipelineId: _id, workspaceId, code }, 'pipeline created');
     res.status(201).json(doc);
@@ -142,8 +152,18 @@ export function pipelineRoutes() {
       updates.sinkConnections = req.body.sinkConnections;
     }
 
-    if (req.body?.transform !== undefined) {
-      updates.transform = req.body.transform || null;
+    if (req.body?.transforms !== undefined) {
+      if (!Array.isArray(req.body.transforms)) return res.status(400).json({ error: 'transforms must be an array' });
+      
+      // Validate unique target streams
+      const transforms = req.body.transforms;
+      const targetStreams = transforms.map((t: any) => t.targetStream).filter(Boolean);
+      const uniqueTargets = new Set(targetStreams);
+      if (targetStreams.length !== uniqueTargets.size) {
+        return res.status(400).json({ error: 'transforms must have unique targetStream values' });
+      }
+      
+      updates.transforms = transforms;
     }
 
     if (req.body?.nodePositions !== undefined) {

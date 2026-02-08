@@ -1,6 +1,24 @@
 # Change Log
 
 ## [Unreleased]
+### Added - Pipeline Multiple Transformations Support
+- **Data Models**: Pipeline schema now supports multiple transformations
+  - Changed `transform` (single object) to `transforms` (array)
+  - Added `isPaused` field to TransformConfig for pausing individual transformations
+  - Validation enforces unique `targetStream` values across all transformations
+- **Control API**: Enhanced pipeline transformation handling
+  - POST/PUT endpoints now accept `transforms` array instead of `transform` object
+  - Backend validation ensures no duplicate target streams (returns 400 error)
+  - Updated OpenAPI documentation with detailed TransformConfig schema
+- **Documentation**: Updated schemas and API docs
+  - packages/openapi-components/control-api.yaml reflects transforms array
+  - docs/components/data-models.md updated with transforms field description
+
+### Breaking Changes
+- **API**: Pipeline `transform` field replaced with `transforms` array
+  - Old pipelines with `transform` field need migration
+  - Frontend must update to use transforms array
+
 ### Added - Pipeline Flow Visualization Enhancements
 - **Webapp**: Interactive drag-and-drop pipeline flow canvas with persistent node positions
   - Single stream creation with type dropdown (source, sink, dlq, replay)

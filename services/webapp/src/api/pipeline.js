@@ -51,7 +51,7 @@ export async function getPipeline(id, signal) {
       streams: Array.isArray(p.streams) ? p.streams : [],
       sourceClients: Array.isArray(p.sourceClients) ? p.sourceClients : [],
       sinkConnections: Array.isArray(p.sinkConnections) ? p.sinkConnections : [],
-      transform: p.transform || null,
+      transforms: Array.isArray(p.transforms) ? p.transforms : [],
       nodePositions: p.nodePositions || {},
       sourceTopic: p.sourceTopic,
       targetTopic: p.targetTopic,

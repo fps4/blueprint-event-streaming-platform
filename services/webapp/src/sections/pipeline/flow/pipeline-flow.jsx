@@ -7,41 +7,42 @@ import ReactFlow, { MiniMap, Controls, Background, useNodesState, useEdgesState 
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
+import AddIcon from '@mui/icons-material/Add';
 
 import { updatePipeline } from 'src/api/pipeline';
 
-import { StreamNode, AddStreamNode, ClientNode, SourceConnectorNode, AddSourceConnectorNode, ConnectionNode, SinkConnectorNode, AddSinkConnectorNode, TransformationNode, AddTransformationNode } from './nodes';
+import { StreamNode, ClientNode, SourceConnectorNode, ConnectionNode, SinkConnectorNode, TransformationNode } from './nodes';
 import { AddStreamDialog } from './add-stream-dialog';
 import { AddSourceConnectorDialog } from './add-source-connector-dialog';
 import { AddSinkConnectorDialog } from './add-sink-connector-dialog';
 import { AddTransformationDialog } from './add-transformation-dialog';
+import { EditTransformationDialog } from './edit-transformation-dialog';
+import { EditSourceConnectorDialog } from './edit-source-connector-dialog';
+import { EditSinkConnectorDialog } from './edit-sink-connector-dialog';
 
 const nodeTypes = {
-  addStream: AddStreamNode,
   stream: StreamNode,
   client: ClientNode,
   sourceConnector: SourceConnectorNode,
-  addSourceConnector: AddSourceConnectorNode,
   connection: ConnectionNode,
   sinkConnector: SinkConnectorNode,
-  addSinkConnector: AddSinkConnectorNode,
   transformation: TransformationNode,
-  addTransformation: AddTransformationNode,
 };
 
 const NODE_VERTICAL_SPACING = 150;
-const BUTTON_ROW_Y = 20; // Y position for top button row
-const CONTENT_START_Y = 150; // Y position where actual content starts (after buttons)
+const CONTENT_START_Y = 50; // Y position where content starts (buttons moved to toolbar)
 
-// Column X positions aligned with "Add" buttons
+// Column X positions
 const COLUMNS = {
-  SOURCE_CONNECTOR: 50,    // Aligned with "Add Source Connector" button at x:50
-  STREAM: 280,             // Aligned with "Add Stream" button at x:280
-  TRANSFORMATION: 510,     // Aligned with "Add Transformation" button at x:510
-  SINK_CONNECTOR: 740,     // Aligned with "Add Sink Connector" button at x:740
-  CLIENT: -180,            // Before source connectors (left of SOURCE_CONNECTOR)
-  CONNECTION: 970,         // After sink connectors (right of SINK_CONNECTOR)
+  SOURCE_CONNECTOR: 50,
+  STREAM: 280,
+  TRANSFORMATION: 510,
+  SINK_CONNECTOR: 740,
+  CLIENT: -180,
+  CONNECTION: 970,
 };
 
 export function PipelineFlow({ pipelineId, pipeline }) {
@@ -49,6 +50,12 @@ export function PipelineFlow({ pipelineId, pipeline }) {
   const [connectorDialogOpen, setConnectorDialogOpen] = useState(false);
   const [sinkDialogOpen, setSinkDialogOpen] = useState(false);
   const [transformDialogOpen, setTransformDialogOpen] = useState(false);
+  const [editTransformDialogOpen, setEditTransformDialogOpen] = useState(false);
+  const [editSourceConnectorDialogOpen, setEditSourceConnectorDialogOpen] = useState(false);
+  const [editSinkConnectorDialogOpen, setEditSinkConnectorDialogOpen] = useState(false);
+  const [selectedSourceConnector, setSelectedSourceConnector] = useState(null);
+  const [selectedSinkConnector, setSelectedSinkConnector] = useState(null);
+  const [selectedTransformationIndex, setSelectedTransformationIndex] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [nodePositions, setNodePositions] = useState({});
@@ -84,9 +91,10 @@ export function PipelineFlow({ pipelineId, pipeline }) {
     return pipeline.sinkConnections;
   }, [pipeline]);
 
-  // Extract transformation from pipeline.transform
-  const transformation = useMemo(() => {
-    return pipeline?.transform || null;
+  // Extract transformations from pipeline.transforms
+  const transformations = useMemo(() => {
+    if (!Array.isArray(pipeline?.transforms)) return [];
+    return pipeline.transforms;
   }, [pipeline]);
 
   // Load saved node positions from pipeline
@@ -106,82 +114,17 @@ export function PipelineFlow({ pipelineId, pipeline }) {
   const initialNodes = useMemo(() => {
     const result = [];
     
-    // Check if streams exist to determine if other functions should be disabled
-    const hasStreams = existingStreams.length > 0;
-    
-    // Add action buttons at the top in a row (left to right) - these should NOT be draggable
-    // 1. Add Source Connector (left)
-    result.push({
-      id: 'add-source-connector',
-      type: 'addSourceConnector',
-      position: { x: 50, y: BUTTON_ROW_Y },
-      draggable: false,
-      data: {
-        onClick: () => setConnectorDialogOpen(true),
-        disabled: !hasStreams,
-      },
-    });
-
-    // 2. Add Stream (center-left)
-    result.push({
-      id: 'add-stream',
-      type: 'addStream',
-      position: { x: 280, y: BUTTON_ROW_Y },
-      draggable: false,
-      data: {
-        onClick: () => setDialogOpen(true),
-      },
-    });
-
-    // 3. Add Transformation (center-right)
-    result.push({
-      id: 'add-transformation',
-      type: 'addTransformation',
-      position: { x: 510, y: BUTTON_ROW_Y },
-      draggable: false,
-      data: {
-        onClick: () => setTransformDialogOpen(true),
-        disabled: !hasStreams,
-      },
-    });
-
-    // 4. Add Sink Connector (right)
-    result.push({
-      id: 'add-sink-connector',
-      type: 'addSinkConnector',
-      position: { x: 740, y: BUTTON_ROW_Y },
-      draggable: false,
-      data: {
-        onClick: () => setSinkDialogOpen(true),
-        disabled: !hasStreams,
-      },
-    });
-    
     // Simple column-based layout
-    let clientY = CONTENT_START_Y;
     let sourceConnectorY = CONTENT_START_Y;
     let streamY = CONTENT_START_Y;
     let transformationY = CONTENT_START_Y;
     let sinkConnectorY = CONTENT_START_Y;
-    let connectionY = CONTENT_START_Y;
     
-    // Add all source connectors with their clients in their columns
+    // Add all source connectors in SOURCE_CONNECTOR column
     sourceConnectors.forEach((connector) => {
       const uniqueId = `${connector.clientId}-${connector.streamName || connector.clientId}`;
       
-      // Client node in CLIENT column
-      const clientNodeId = `client-${uniqueId}`;
-      result.push({
-        id: clientNodeId,
-        type: 'client',
-        position: getNodePosition(clientNodeId, { x: COLUMNS.CLIENT, y: clientY }),
-        data: {
-          clientName: connector.clientName || connector.clientId,
-        },
-      });
-      clientY += NODE_VERTICAL_SPACING;
-      
-      // Source connector node in SOURCE_CONNECTOR column
+      // Source connector node in SOURCE_CONNECTOR column with client name
       const sourceConnectorNodeId = `source-connector-${uniqueId}`;
       result.push({
         id: sourceConnectorNodeId,
@@ -190,6 +133,11 @@ export function PipelineFlow({ pipelineId, pipeline }) {
         data: {
           connectorType: connector.connectorType,
           description: connector.description,
+          clientName: connector.clientName || connector.clientId,
+          onEdit: () => {
+            setSelectedSourceConnector(connector);
+            setEditSourceConnectorDialogOpen(true);
+          },
         },
       });
       sourceConnectorY += NODE_VERTICAL_SPACING;
@@ -210,9 +158,9 @@ export function PipelineFlow({ pipelineId, pipeline }) {
       streamY += NODE_VERTICAL_SPACING;
     });
     
-    // Add transformation if it exists in TRANSFORMATION column (under Add Transformation button)
-    if (transformation) {
-      const transformationNodeId = 'transformation';
+    // Add all transformations in TRANSFORMATION column
+    transformations.forEach((transformation, index) => {
+      const transformationNodeId = `transformation-${index}`;
       result.push({
         id: transformationNodeId,
         type: 'transformation',
@@ -223,15 +171,22 @@ export function PipelineFlow({ pipelineId, pipeline }) {
           targetStream: transformation.targetStream,
           failureQueue: transformation.failureQueue,
           description: transformation.description,
+          isPaused: transformation.isPaused || false,
+          onEdit: () => {
+            setSelectedTransformationIndex(index);
+            setEditTransformDialogOpen(true);
+          },
+          onTogglePause: () => handleToggleTransformationPause(index),
         },
       });
-    }
+      transformationY += NODE_VERTICAL_SPACING;
+    });
     
-    // Add all sink connectors with their connections in their columns
+    // Add all sink connectors in SINK_CONNECTOR column
     sinkConnectors.forEach((connector) => {
       const uniqueId = `${connector.connectionId}-${connector.streamName || connector.connectionId}`;
       
-      // Sink connector node in SINK_CONNECTOR column
+      // Sink connector node in SINK_CONNECTOR column with connection name
       const sinkConnectorNodeId = `sink-connector-${uniqueId}`;
       result.push({
         id: sinkConnectorNodeId,
@@ -240,25 +195,18 @@ export function PipelineFlow({ pipelineId, pipeline }) {
         data: {
           connectorType: connector.connectorType,
           description: connector.description,
+          connectionName: connector.connectionName || connector.connectionId,
+          onEdit: () => {
+            setSelectedSinkConnector(connector);
+            setEditSinkConnectorDialogOpen(true);
+          },
         },
       });
       sinkConnectorY += NODE_VERTICAL_SPACING;
-      
-      // Connection node in CONNECTION column
-      const connectionNodeId = `connection-${uniqueId}`;
-      result.push({
-        id: connectionNodeId,
-        type: 'connection',
-        position: getNodePosition(connectionNodeId, { x: COLUMNS.CONNECTION, y: connectionY }),
-        data: {
-          connectionName: connector.connectionName || connector.connectionId,
-        },
-      });
-      connectionY += NODE_VERTICAL_SPACING;
     });
 
     return result;
-  }, [existingStreams, sourceConnectors, sinkConnectors, transformation, getNodePosition]);
+  }, [existingStreams, sourceConnectors, sinkConnectors, transformations, getNodePosition]);
 
   // Use ReactFlow's node state management
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -272,23 +220,10 @@ export function PipelineFlow({ pipelineId, pipeline }) {
   const edges = useMemo(() => {
     const result = [];
     
-    console.log('=== EDGE BUILDING DEBUG ===');
-    console.log('transformation object:', transformation);
-    console.log('existingStreams:', existingStreams);
-    
-    // Connect each client to its connector
+    // Connect each connector to its specific source stream (if streamName is specified)
     sourceConnectors.forEach((connector, index) => {
-      // Create unique ID using clientId + streamName
       const uniqueId = `${connector.clientId}-${connector.streamName || index}`;
       
-      result.push({
-        id: `edge-client-${uniqueId}`,
-        source: `client-${uniqueId}`,
-        target: `source-connector-${uniqueId}`,
-        animated: true,
-      });
-      
-      // Connect connector to its specific source stream (if streamName is specified)
       if (connector.streamName) {
         result.push({
           id: `edge-connector-${uniqueId}-${connector.streamName}`,
@@ -299,12 +234,10 @@ export function PipelineFlow({ pipelineId, pipeline }) {
       }
     });
     
-    // Connect each sink stream to its sink connector and connection
+    // Connect each sink stream to its sink connector (if streamName is specified)
     sinkConnectors.forEach((connector, index) => {
-      // Create unique ID using connectionId + streamName
       const uniqueId = `${connector.connectionId}-${connector.streamName || index}`;
       
-      // Connect sink stream to sink connector (if streamName is specified)
       if (connector.streamName) {
         result.push({
           id: `edge-stream-${connector.streamName}-${uniqueId}`,
@@ -313,18 +246,12 @@ export function PipelineFlow({ pipelineId, pipeline }) {
           animated: false,
         });
       }
-      
-      // Connect sink connector to connection
-      result.push({
-        id: `edge-sink-${uniqueId}`,
-        source: `sink-connector-${uniqueId}`,
-        target: `connection-${uniqueId}`,
-        animated: true,
-      });
     });
     
-    // Connect transformation if it exists
-    if (transformation && transformation.sourceStream && transformation.targetStream) {
+    // Connect all transformations
+    transformations.forEach((transformation, index) => {
+      if (!transformation.sourceStream || !transformation.targetStream) return;
+      
       // Find the actual source and target streams to get their variants
       const sourceStream = existingStreams.find(
         (s) => s.streamName === transformation.sourceStream && s.variant === 'source'
@@ -336,31 +263,26 @@ export function PipelineFlow({ pipelineId, pipeline }) {
         (s) => s.streamName === transformation.targetStream && s.variant !== 'source'
       );
       
-      console.log('Transformation:', transformation);
-      console.log('Existing streams:', existingStreams);
-      console.log('Found source stream:', sourceStream);
-      console.log('Found target stream:', targetStream);
+      const transformNodeId = `transformation-${index}`;
       
       if (sourceStream) {
         // Source stream -> Transformation
         result.push({
-          id: 'edge-transform-source',
+          id: `edge-transform-${index}-source`,
           source: `stream-${sourceStream.streamName}-${sourceStream.variant}`,
-          target: 'transformation',
+          target: transformNodeId,
           animated: true,
         });
-        console.log('Added edge from source to transformation');
       }
       
       if (targetStream) {
         // Transformation -> Target stream
         result.push({
-          id: 'edge-transform-target',
-          source: 'transformation',
+          id: `edge-transform-${index}-target`,
+          source: transformNodeId,
           target: `stream-${targetStream.streamName}-${targetStream.variant}`,
           animated: true,
         });
-        console.log('Added edge from transformation to target');
       }
       
       // Connect to failure queue if specified
@@ -370,18 +292,18 @@ export function PipelineFlow({ pipelineId, pipeline }) {
         );
         if (failureStream) {
           result.push({
-            id: 'edge-transform-failure',
-            source: 'transformation',
+            id: `edge-transform-${index}-failure`,
+            source: transformNodeId,
             target: `stream-${failureStream.streamName}-${failureStream.variant}`,
             animated: true,
             style: { stroke: '#ff0000', strokeDasharray: '5,5' },
           });
         }
       }
-    }
+    });
     
     return result;
-  }, [sourceConnectors, sinkConnectors, transformation, existingStreams]);
+  }, [sourceConnectors, sinkConnectors, transformations, existingStreams]);
 
   const handleAddStream = useCallback(
     async (streamName, streamType) => {
@@ -504,6 +426,90 @@ export function PipelineFlow({ pipelineId, pipeline }) {
     [pipelineId, pipeline]
   );
 
+  const handleEditSourceConnector = useCallback(
+    async (connectorData) => {
+      if (!pipelineId || !pipeline?.workspaceId || !selectedSourceConnector) {
+        setError('Pipeline or workspace ID missing');
+        return;
+      }
+
+      setSaving(true);
+      setError(null);
+
+      try {
+        // Update the specific connector in the array
+        const updatedSourceClients = (pipeline.sourceClients || []).map((connector) => {
+          if (connector.clientId === selectedSourceConnector.clientId && 
+              connector.streamName === selectedSourceConnector.streamName) {
+            return {
+              ...connector,
+              connectorType: connectorData.connectorType,
+              streamName: connectorData.streamName,
+              description: connectorData.description,
+            };
+          }
+          return connector;
+        });
+
+        await updatePipeline(pipelineId, {
+          workspaceId: pipeline.workspaceId,
+          sourceClients: updatedSourceClients,
+        });
+
+        // Trigger parent to refetch pipeline data
+        window.location.reload();
+      } catch (err) {
+        console.error('Failed to edit source connector:', err);
+        setError(err?.message || 'Failed to edit source connector');
+      } finally {
+        setSaving(false);
+      }
+    },
+    [pipelineId, pipeline, selectedSourceConnector]
+  );
+
+  const handleEditSinkConnector = useCallback(
+    async (connectorData) => {
+      if (!pipelineId || !pipeline?.workspaceId || !selectedSinkConnector) {
+        setError('Pipeline or workspace ID missing');
+        return;
+      }
+
+      setSaving(true);
+      setError(null);
+
+      try {
+        // Update the specific connector in the array
+        const updatedSinkConnections = (pipeline.sinkConnections || []).map((connector) => {
+          if (connector.connectionId === selectedSinkConnector.connectionId && 
+              connector.streamName === selectedSinkConnector.streamName) {
+            return {
+              ...connector,
+              connectorType: connectorData.connectorType,
+              streamName: connectorData.streamName,
+              description: connectorData.description,
+            };
+          }
+          return connector;
+        });
+
+        await updatePipeline(pipelineId, {
+          workspaceId: pipeline.workspaceId,
+          sinkConnections: updatedSinkConnections,
+        });
+
+        // Trigger parent to refetch pipeline data
+        window.location.reload();
+      } catch (err) {
+        console.error('Failed to edit sink connector:', err);
+        setError(err?.message || 'Failed to edit sink connector');
+      } finally {
+        setSaving(false);
+      }
+    },
+    [pipelineId, pipeline, selectedSinkConnector]
+  );
+
   const handleAddTransformation = useCallback(
     async (transformData) => {
       if (!pipelineId || !pipeline?.workspaceId) {
@@ -524,9 +530,12 @@ export function PipelineFlow({ pipelineId, pipeline }) {
           description: transformData.description || '',
         };
 
+        // Add to transforms array
+        const updatedTransforms = [...(pipeline.transforms || []), newTransform];
+
         await updatePipeline(pipelineId, {
           workspaceId: pipeline.workspaceId,
-          transform: newTransform,
+          transforms: updatedTransforms,
         });
 
         // Trigger parent to refetch pipeline data
@@ -534,6 +543,89 @@ export function PipelineFlow({ pipelineId, pipeline }) {
       } catch (err) {
         console.error('Failed to add transformation:', err);
         setError(err?.message || 'Failed to add transformation');
+      } finally {
+        setSaving(false);
+      }
+    },
+    [pipelineId, pipeline]
+  );
+
+  const handleEditTransformation = useCallback(
+    async (transformData) => {
+      if (!pipelineId || !pipeline?.workspaceId || selectedTransformationIndex === null) {
+        setError('Pipeline or workspace ID missing');
+        return;
+      }
+
+      setSaving(true);
+      setError(null);
+
+      try {
+        const transforms = Array.isArray(pipeline.transforms) ? [...pipeline.transforms] : [];
+        
+        // Update the selected transformation
+        if (selectedTransformationIndex >= 0 && selectedTransformationIndex < transforms.length) {
+          transforms[selectedTransformationIndex] = {
+            ...transforms[selectedTransformationIndex],
+            type: transformData.type,
+            sourceStream: transformData.sourceStream,
+            targetStream: transformData.targetStream,
+            failureQueue: transformData.failureQueue || null,
+            expression: transformData.expression,
+            description: transformData.description || '',
+          };
+        }
+
+        await updatePipeline(pipelineId, {
+          workspaceId: pipeline.workspaceId,
+          transforms,
+        });
+
+        // Trigger parent to refetch pipeline data
+        window.location.reload();
+      } catch (err) {
+        console.error('Failed to edit transformation:', err);
+        setError(err?.message || 'Failed to edit transformation');
+      } finally {
+        setSaving(false);
+      }
+    },
+    [pipelineId, pipeline, selectedTransformationIndex]
+  );
+
+  const handleToggleTransformationPause = useCallback(
+    async (index) => {
+      if (!pipelineId || !pipeline?.workspaceId) {
+        setError('Pipeline or workspace ID missing');
+        return;
+      }
+
+      setSaving(true);
+      setError(null);
+
+      try {
+        const transforms = Array.isArray(pipeline.transforms) ? [...pipeline.transforms] : [];
+        if (index < 0 || index >= transforms.length) {
+          setError('Invalid transformation index');
+          return;
+        }
+
+        // Toggle pause on the specified transformation
+        transforms[index] = {
+          ...transforms[index],
+          isPaused: !transforms[index]?.isPaused,
+        };
+
+        await updatePipeline(pipelineId, {
+          workspaceId: pipeline.workspaceId,
+          transforms,
+        });
+
+        // Trigger parent to refetch pipeline data
+        window.location.reload();
+      } catch (err) {
+        console.error('Failed to toggle transformation pause:', err);
+        setError(err?.message || 'Failed to toggle transformation pause');
       } finally {
         setSaving(false);
       }
@@ -575,8 +667,58 @@ export function PipelineFlow({ pipelineId, pipeline }) {
     );
   }
 
+  const hasStreams = existingStreams.length > 0;
+
   return (
-    <Box sx={{ width: '100%', height: 600, position: 'relative' }}>
+    <Box sx={{ width: '100%' }}>
+      {/* Action Toolbar */}
+      <Stack 
+        direction="row" 
+        spacing={2} 
+        sx={{ 
+          mb: 2,
+          p: 2,
+          bgcolor: 'background.paper',
+          borderRadius: 1,
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Button
+          variant="outlined"
+          startIcon={<AddIcon />}
+          onClick={() => setConnectorDialogOpen(true)}
+          disabled={!hasStreams}
+        >
+          Add Source Connector
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<AddIcon />}
+          onClick={() => setDialogOpen(true)}
+        >
+          Add Stream
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<AddIcon />}
+          onClick={() => setTransformDialogOpen(true)}
+          disabled={!hasStreams}
+        >
+          Add Transformation
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<AddIcon />}
+          onClick={() => setSinkDialogOpen(true)}
+          disabled={!hasStreams}
+        >
+          Add Sink Connector
+        </Button>
+      </Stack>
+
+      {/* ReactFlow Canvas */}
+      <Box sx={{ width: '100%', height: 600, position: 'relative' }}>
       {error && (
         <Alert severity="error" sx={{ position: 'absolute', top: 16, left: 16, right: 16, zIndex: 10 }}>
           {error}
@@ -630,10 +772,30 @@ export function PipelineFlow({ pipelineId, pipeline }) {
         onAdd={handleAddSourceConnector}
         sourceStreams={existingStreams.filter((s) => s.variant === 'source')}
       />
+      <EditSourceConnectorDialog
+        open={editSourceConnectorDialogOpen}
+        onClose={() => {
+          setEditSourceConnectorDialogOpen(false);
+          setSelectedSourceConnector(null);
+        }}
+        onSave={handleEditSourceConnector}
+        connector={selectedSourceConnector}
+        sourceStreams={existingStreams.filter((s) => s.variant === 'source')}
+      />
       <AddSinkConnectorDialog
         open={sinkDialogOpen}
         onClose={() => setSinkDialogOpen(false)}
         onAdd={handleAddSinkConnector}
+        sinkStreams={existingStreams.filter((s) => s.variant === 'sink')}
+      />
+      <EditSinkConnectorDialog
+        open={editSinkConnectorDialogOpen}
+        onClose={() => {
+          setEditSinkConnectorDialogOpen(false);
+          setSelectedSinkConnector(null);
+        }}
+        onSave={handleEditSinkConnector}
+        connector={selectedSinkConnector}
         sinkStreams={existingStreams.filter((s) => s.variant === 'sink')}
       />
       <AddTransformationDialog
@@ -644,6 +806,19 @@ export function PipelineFlow({ pipelineId, pipeline }) {
         sinkStreams={existingStreams.filter((s) => s.variant === 'sink')}
         dlqStreams={existingStreams.filter((s) => s.variant === 'dlq')}
       />
+      <EditTransformationDialog
+        open={editTransformDialogOpen}
+        onClose={() => {
+          setEditTransformDialogOpen(false);
+          setSelectedTransformationIndex(null);
+        }}
+        onSave={handleEditTransformation}
+        transformation={selectedTransformationIndex !== null ? transformations[selectedTransformationIndex] : null}
+        sourceStreams={existingStreams.filter((s) => s.variant === 'source')}
+        sinkStreams={existingStreams.filter((s) => s.variant === 'sink')}
+        dlqStreams={existingStreams.filter((s) => s.variant === 'dlq')}
+      />
+      </Box>
     </Box>
   );
 }

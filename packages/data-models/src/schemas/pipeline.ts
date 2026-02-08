@@ -30,6 +30,7 @@ export interface TransformConfig {
   failureQueue?: string;
   expression: string;
   description?: string;
+  isPaused?: boolean;
 }
 
 export interface NodePositions {
@@ -46,7 +47,7 @@ export interface PipelineDocument extends Document<string> {
   streams: StreamDefinition[];
   sourceClients: ClientConfigRef[];
   sinkConnections: ConnectionConfigRef[];
-  transform?: TransformConfig;
+  transforms: TransformConfig[];
   nodePositions?: NodePositions;
   createdAt?: Date;
   updatedAt?: Date;
@@ -79,7 +80,8 @@ const transformConfigSchema = new mongoose.Schema({
   targetStream: { type: String, required: true, trim: true },
   failureQueue: { type: String, trim: true },
   expression: { type: String, required: true, trim: true },
-  description: { type: String }
+  description: { type: String },
+  isPaused: { type: Boolean, default: false }
 }, { _id: false });
 
 export const pipelineSchema = new mongoose.Schema({
@@ -92,7 +94,7 @@ export const pipelineSchema = new mongoose.Schema({
   streams: { type: [streamDefinitionSchema], default: [] },
   sourceClients: { type: [clientConfigRefSchema], default: [] },
   sinkConnections: { type: [connectionConfigRefSchema], default: [] },
-  transform: { type: transformConfigSchema, default: null },
+  transforms: { type: [transformConfigSchema], default: [] },
   nodePositions: { type: mongoose.Schema.Types.Mixed, default: {} },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

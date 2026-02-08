@@ -209,10 +209,12 @@ components:
           items:
             $ref: "#/components/schemas/ClientConfigRef"
           description: Clients consuming from sink topics.
-        transform:
-          $ref: "#/components/schemas/TransformConfig"
-          nullable: true
-          description: Optional transformation configuration.
+        transforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransformConfig"
+          description: Array of transformation configurations. Each transformation must have a unique targetStream.
+          default: []
         createdAt:
           type: string
           format: date-time
@@ -258,16 +260,34 @@ components:
       type: object
       required:
         - type
-        - transformId
+        - sourceStream
+        - targetStream
+        - expression
       properties:
         type:
           type: string
-          enum: [jsonata]
+          enum: [JSONata]
           description: Transform engine type.
-        transformId:
+        sourceStream:
           type: string
-          format: uuid
-          description: Reference to JsonataTransform entity.
+          description: Name of the source stream to transform from.
+        targetStream:
+          type: string
+          description: Name of the target stream to write transformed data to. Must be unique across all transforms in the pipeline.
+        failureQueue:
+          type: string
+          description: Optional DLQ stream name for failed transformations.
+        expression:
+          type: string
+          description: JSONata transformation expression.
+        description:
+          type: string
+          maxLength: 500
+          description: Optional description of the transformation.
+        isPaused:
+          type: boolean
+          default: false
+          description: Whether the transformation is paused.
 
     Client:
       type: object
@@ -593,9 +613,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ClientConfigRef"
-        transform:
-          $ref: "#/components/schemas/TransformConfig"
-          nullable: true
+        transforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransformConfig"
+          description: Array of transformations. Each must have a unique targetStream.
 
     UpdatePipelineRequest:
       type: object
@@ -625,9 +647,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ClientConfigRef"
-        transform:
-          $ref: "#/components/schemas/TransformConfig"
-          nullable: true
+        transforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransformConfig"
+          description: Array of transformations. Each must have a unique targetStream.
 
     CreateClientRequest:
       type: object

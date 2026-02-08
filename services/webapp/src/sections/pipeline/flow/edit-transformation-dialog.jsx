@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
@@ -15,7 +15,7 @@ const TRANSFORMATION_TYPES = [
   { value: 'jsonata', label: 'JSONata' },
 ];
 
-export function AddTransformationDialog({ open, onClose, onAdd, sourceStreams, sinkStreams, dlqStreams }) {
+export function EditTransformationDialog({ open, onClose, onSave, transformation, sourceStreams, sinkStreams, dlqStreams }) {
   const [type, setType] = useState('jsonata');
   const [sourceStream, setSourceStream] = useState('');
   const [targetStream, setTargetStream] = useState('');
@@ -24,7 +24,20 @@ export function AddTransformationDialog({ open, onClose, onAdd, sourceStreams, s
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
 
-  const handleAdd = () => {
+  // Load transformation data when dialog opens
+  useEffect(() => {
+    if (open && transformation) {
+      setType(transformation.type || 'jsonata');
+      setSourceStream(transformation.sourceStream || '');
+      setTargetStream(transformation.targetStream || '');
+      setFailureQueue(transformation.failureQueue || '');
+      setExpression(transformation.expression || '');
+      setDescription(transformation.description || '');
+      setError('');
+    }
+  }, [open, transformation]);
+
+  const handleSave = () => {
     if (!type) {
       setError('Type is required');
       return;
@@ -42,7 +55,7 @@ export function AddTransformationDialog({ open, onClose, onAdd, sourceStreams, s
       return;
     }
 
-    onAdd({
+    onSave({
       type,
       sourceStream,
       targetStream,
@@ -66,7 +79,7 @@ export function AddTransformationDialog({ open, onClose, onAdd, sourceStreams, s
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>Add Transformation</DialogTitle>
+      <DialogTitle>Edit Transformation</DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
           <TextField
@@ -177,8 +190,8 @@ export function AddTransformationDialog({ open, onClose, onAdd, sourceStreams, s
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleAdd} variant="contained">
-          Add
+        <Button onClick={handleSave} variant="contained">
+          Save
         </Button>
       </DialogActions>
     </Dialog>
