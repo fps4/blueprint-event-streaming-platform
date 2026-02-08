@@ -10,9 +10,28 @@ export function pipelineRoutes() {
 
   router.get('/pipelines', async (_req, res) => {
     const conn = await getConnection();
-    const { Pipeline } = makeModels(conn);
+    const { Pipeline, Workspace } = makeModels(conn);
     const items = await Pipeline.find({}).lean().exec();
-    res.json({ items });
+    
+    // Fetch workspace info for all pipelines
+    const workspaceIds = [...new Set(items.map((p: any) => p.workspaceId).filter(Boolean))];
+    const workspaces = workspaceIds.length > 0
+      ? await Workspace.find({ _id: { $in: workspaceIds } }).lean().exec()
+      : [];
+    
+    const workspaceMap = new Map(workspaces.map((w: any) => [w._id, w]));
+    
+    // Enrich pipelines with workspace info
+    const enrichedItems = items.map((p: any) => {
+      const workspace = workspaceMap.get(p.workspaceId);
+      return {
+        ...p,
+        workspaceName: workspace?.name || '',
+        workspaceCode: workspace?.code || '',
+      };
+    });
+    
+    res.json({ items: enrichedItems });
   });
 
   router.get('/pipelines/:pipelineId', async (req, res) => {

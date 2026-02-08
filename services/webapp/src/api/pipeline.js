@@ -13,6 +13,8 @@ export async function listPipelines(signal) {
       status: p.status ?? 'unknown',
       description: p.description ?? '',
       workspaceId: p.workspaceId ?? '',
+      workspaceName: p.workspaceName ?? '',
+      workspaceCode: p.workspaceCode ?? '',
       sourceTopic: p.sourceTopic ?? '',
       targetTopic: p.targetTopic ?? '',
     }));

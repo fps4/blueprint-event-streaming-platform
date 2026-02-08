@@ -41,9 +41,9 @@ export function PipelineListView() {
   const columns = useMemo(
     () => [
       {
-        field: 'code',
-        headerName: 'Code',
-        width: 90,
+        field: 'workspaceName',
+        headerName: 'Workspace Name',
+        width: 200,
       },
       {
         field: 'name',
@@ -54,19 +54,19 @@ export function PipelineListView() {
       {
         field: 'status',
         headerName: 'Status',
-        width: 140,
+        width: 120,
       },
       {
         field: 'sourceTopic',
         headerName: 'Source',
         flex: 1,
-        minWidth: 160,
+        minWidth: 120,
       },
       {
         field: 'targetTopic',
         headerName: 'Target',
         flex: 1,
-        minWidth: 160,
+        minWidth: 120,
       },
     ],
     []
