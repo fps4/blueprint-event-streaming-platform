@@ -24,6 +24,10 @@ import {
   WorkspaceNotFoundError
 } from './errors.js';
 
+const WORKSPACE_CODE_LENGTH = 4;
+const WORKSPACE_CODE_ALPHABET = 'abcdefghijklmnopqrstuvwxyz';
+const WORKSPACE_CODE_MAX_RETRIES = 10;
+
 export function createAuthorizerCore(deps: AuthorizerCoreDependencies): AuthorizerCore {
   const uuid = deps.uuid ?? randomUuid;
   const now = deps.now ?? (() => new Date());
@@ -295,13 +299,29 @@ export function createAuthorizerCore(deps: AuthorizerCoreDependencies): Authoriz
     const workspaceId = uuid();
     const userId = uuid();
 
-    // Create Workspace
-    await Workspace.create({
-      _id: workspaceId,
-      name: `${input.username}'s Workspace`,
-      status: 'active',
-      allowedOrigins: []
-    });
+    // Create Workspace with a unique 4-letter code.
+    let workspaceCreated = false;
+    for (let attempt = 0; attempt < WORKSPACE_CODE_MAX_RETRIES; attempt++) {
+      const code = generateWorkspaceCode();
+      try {
+        await Workspace.create({
+          _id: workspaceId,
+          name: `${input.username}'s Workspace`,
+          code,
+          status: 'active',
+          allowedOrigins: []
+        });
+        workspaceCreated = true;
+        break;
+      } catch (err) {
+        if (isDuplicateWorkspaceCodeError(err)) continue;
+        throw err;
+      }
+    }
+
+    if (!workspaceCreated) {
+      throw new InvalidInputError('Failed to allocate workspace code');
+    }
 
     // Create User
     const { hash, salt } = hashSecret(input.password);
@@ -413,4 +433,21 @@ function buildSessionContext(meta?: ClientMeta): Record<string, unknown> | undef
   }
 
   return Object.keys(context).length ? context : undefined;
+}
+
+function generateWorkspaceCode(): string {
+  const bytes = randomBytes(WORKSPACE_CODE_LENGTH);
+  let code = '';
+  for (const byte of bytes) {
+    code += WORKSPACE_CODE_ALPHABET[byte % WORKSPACE_CODE_ALPHABET.length];
+  }
+  return code;
+}
+
+function isDuplicateWorkspaceCodeError(err: unknown): boolean {
+  const error = err as any;
+  if (error?.code !== 11000) return false;
+  if (error?.keyPattern?.code === 1) return true;
+  if (error?.keyValue && typeof error.keyValue === 'object' && 'code' in error.keyValue) return true;
+  return false;
 }

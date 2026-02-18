@@ -240,3 +240,82 @@ test('refreshSession errors on missing or expired session', async () => {
   const expiredCore = createAuthorizerCore(expiredDeps);
   await assert.rejects(() => expiredCore.refreshSession({ sessionId: 'session-expired' }), SessionNotFoundError);
 });
+
+test('registerUser creates workspace with generated 4-letter code', async () => {
+  let createdWorkspace: any | null = null;
+  let uuidCounter = 0;
+  const uuidValues = ['workspace-1', 'user-1', 'session-1'];
+
+  const deps = buildDeps({
+    uuid: () => uuidValues[uuidCounter++] || `id-${uuidCounter}`,
+    makeModels: () => ({
+      Workspace: {
+        findOne: () => ({ lean: () => ({ exec: async () => ({ _id: 'ws1', status: 'active' }) }) }),
+        create: async (doc: any) => {
+          createdWorkspace = doc;
+          return doc;
+        }
+      },
+      User: {
+        findOne: ({ username }: any) => ({
+          lean: () => ({
+            exec: async () => (username === 'alice' ? { _id: 'user-1', username } : null)
+          })
+        }),
+        create: async (doc: any) => doc
+      },
+      Session: {
+        init: async () => {},
+        create: async () => {},
+        findById: () => ({ exec: async () => null })
+      }
+    }) as any
+  });
+
+  const core = createAuthorizerCore(deps);
+  const result = await core.registerUser({ username: 'bob', password: 'password' });
+
+  assert.equal(result.workspaceId, 'workspace-1');
+  assert.ok(createdWorkspace);
+  assert.match(String(createdWorkspace.code), /^[a-z]{4}$/);
+});
+
+test('registerUser retries on duplicate workspace code', async () => {
+  let createAttempts = 0;
+  let uuidCounter = 0;
+  const uuidValues = ['workspace-2', 'user-2', 'session-2'];
+
+  const deps = buildDeps({
+    uuid: () => uuidValues[uuidCounter++] || `id-${uuidCounter}`,
+    makeModels: () => ({
+      Workspace: {
+        findOne: () => ({ lean: () => ({ exec: async () => ({ _id: 'ws1', status: 'active' }) }) }),
+        create: async (doc: any) => {
+          createAttempts += 1;
+          if (createAttempts === 1) {
+            const duplicateErr: any = new Error('duplicate key');
+            duplicateErr.code = 11000;
+            duplicateErr.keyPattern = { code: 1 };
+            throw duplicateErr;
+          }
+          return doc;
+        }
+      },
+      User: {
+        findOne: () => ({ lean: () => ({ exec: async () => null }) }),
+        create: async (doc: any) => doc
+      },
+      Session: {
+        init: async () => {},
+        create: async () => {},
+        findById: () => ({ exec: async () => null })
+      }
+    }) as any
+  });
+
+  const core = createAuthorizerCore(deps);
+  const result = await core.registerUser({ username: 'retry@example.com', password: 'password' });
+
+  assert.equal(result.workspaceId, 'workspace-2');
+  assert.equal(createAttempts, 2);
+});
