@@ -95,12 +95,10 @@ export const navData = [
     items: [
       {
         title: 'User Manual',
-        path: paths.dashboard.group.root,
+        path: paths.dashboard.manuals.userManual.root,
         icon: ICONS.wiki,
         children: [
-          { title: 'Four', path: paths.dashboard.group.root },
-          { title: 'Five', path: paths.dashboard.group.five },
-          { title: 'Six', path: paths.dashboard.group.six },
+          { title: 'Quick Start', path: paths.dashboard.manuals.userManual.quickStart },
         ],
       },
     ],
