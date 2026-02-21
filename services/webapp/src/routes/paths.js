@@ -84,5 +84,11 @@ export const paths = {
           five: `${ROOTS.DASHBOARD}/group/five`,
           six: `${ROOTS.DASHBOARD}/group/six`,
       },
+      manuals: {
+        userManual: {
+          root: `${ROOTS.DASHBOARD}/manuals/user-manual`,
+          quickStart: `${ROOTS.DASHBOARD}/manuals/user-manual/quick-start`,
+        },
+      },
   },
 };

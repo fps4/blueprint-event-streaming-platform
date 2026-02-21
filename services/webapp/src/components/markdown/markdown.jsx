@@ -3,8 +3,8 @@ import './code-highlight-block.css';
 import { useMemo } from 'react';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
+import { MarkdownRenderer } from '@fps4/component-ui';
 import { mergeClasses, isExternalLink } from 'minimal-shared/utils';
 
 import Link from '@mui/material/Link';
@@ -28,10 +28,11 @@ export function Markdown({ children, sx, className, ...other }) {
 
   return (
     <MarkdownRoot className={mergeClasses([markdownClasses.root, className])} sx={sx}>
-      <ReactMarkdown
+      <MarkdownRenderer
         children={content}
         components={components}
         rehypePlugins={rehypePlugins}
+        remarkPlugins={remarkPlugins}
         /* base64-encoded images
          * https://github.com/remarkjs/react-markdown/issues/774
          * urlTransform={(value: string) => value}
@@ -42,7 +43,8 @@ export function Markdown({ children, sx, className, ...other }) {
   );
 }
 
-const rehypePlugins = [rehypeRaw, rehypeHighlight, [remarkGfm, { singleTilde: false }]];
+const rehypePlugins = [rehypeRaw, rehypeHighlight];
+const remarkPlugins = [[remarkGfm, { singleTilde: false }]];
 
 const components = {
   img: ({ ...other }) => (
